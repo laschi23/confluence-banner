@@ -1,0 +1,49 @@
+import com.onresolve.scriptrunner.runner.rest.common.CustomEndpointDelegate;
+import com.atlassian.sal.api.component.ComponentLocator;
+import groovy.transform.BaseScript
+import javax.ws.rs.core.MultivaluedMap
+import javax.ws.rs.core.Response
+import org.apache.log4j.Level
+import org.apache.log4j.Logger
+import org.codehaus.jackson.map.ObjectMapper
+import com.atlassian.confluence.pages.PageManager;
+import com.atlassian.confluence.core.ContentPropertyManager
+
+@BaseScript CustomEndpointDelegate delegate 
+
+acknowledgeUser( 
+    httpMethod: "POST"
+) { MultivaluedMap queryParams, String body -> 
+    
+    def mapper = new ObjectMapper()
+    def params = mapper.readValue(body, Map)
+    assert params.userkey
+    assert params.pageId
+    
+    def userkey = params.userkey as String
+    def pageId = params.pageId as long
+        
+    log.info("userkey: " + userkey)
+    
+    PageManager pageManager = ComponentLocator.getComponent(PageManager)
+    ContentPropertyManager contentPropertyManager = ComponentLocator.getComponent(ContentPropertyManager)
+    
+    def page = pageManager.getPage(pageId)
+    
+    def time = new Date().time
+    
+    String users = contentPropertyManager.getStringProperty(page, "user-acknowledged");
+    log.info("users variable before: " + users)
+    if(users == "" || users == null){
+        log.info("the variable users was empty")
+   		contentPropertyManager.setStringProperty(page, "user-acknowledged", userkey+"-"+time+";")
+    }else{
+        if(!users.contains(userkey)){
+   			contentPropertyManager.setStringProperty(page, "user-acknowledged", users + userkey+"-"+time+";")
+        }
+    }
+    users = contentPropertyManager.getStringProperty(page, "user-acknowledged");
+    log.info("users variable after: " + users)
+    
+    return Response.ok().build();
+}

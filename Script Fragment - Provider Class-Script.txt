@@ -1,0 +1,34 @@
+import com.atlassian.confluence.user.AuthenticatedUserThreadLocal
+
+// CHANGE THIS ID
+String pageId = 94521878
+
+
+def currentUser = AuthenticatedUserThreadLocal.get()
+
+writer.write("""
+    <div class="aui-message closeable aui-message-warning">
+        <p>INFO TEXT</p>
+        <span class="aui-icon icon-close" id="test" role="button" tabindex="0"></span>
+    </div>
+    <script>
+    let buttonSelector1 = 'span#test';
+    let button1 = document.querySelector(buttonSelector1); 
+    let baseURL = window.location.protocol + "//" + window.location.host
+    function clickHandler(clickEvent) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("POST", baseURL + '/rest/scriptrunner/latest/custom/acknowledgeUser', true); 
+        xhttp.setRequestHeader("Content-Type", "application/json");
+        xhttp.onreadystatechange = function() {
+           if (this.readyState == 4 && this.status == 200) {
+             // Response
+             var response = this.responseText;
+           }
+        };
+        var data = {userkey:'""" + currentUser.key + """', pageId: '""" + pageId + """'};
+        xhttp.send(JSON.stringify(data));
+    }
+
+    button1.addEventListener('click', clickHandler); 
+    </script>
+    """)

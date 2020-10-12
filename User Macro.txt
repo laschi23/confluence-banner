@@ -1,0 +1,68 @@
+import com.onresolve.scriptrunner.runner.rest.common.CustomEndpointDelegate;
+import com.atlassian.sal.api.component.ComponentLocator;
+import groovy.transform.BaseScript
+import javax.ws.rs.core.MultivaluedMap
+import javax.ws.rs.core.Response
+import org.apache.log4j.Level
+import org.apache.log4j.Logger
+import org.codehaus.jackson.map.ObjectMapper
+import com.atlassian.confluence.pages.PageManager;
+import com.atlassian.confluence.core.ContentPropertyManager
+import com.atlassian.confluence.xhtml.api.XhtmlContent
+import com.atlassian.renderer.v2.RenderUtils
+import groovy.xml.MarkupBuilder
+import com.atlassian.confluence.user.UserAccessor
+import com.atlassian.sal.api.user.UserKey
+import com.atlassian.confluence.user.ConfluenceUser
+
+
+def xhtmlContent = ComponentLocator.getComponent(XhtmlContent)
+
+def log = Logger.getLogger("com.onresolve.scriptrunner.runner.ScriptRunnerImpl")
+
+PageManager pageManager = ComponentLocator.getComponent(PageManager)
+ContentPropertyManager contentPropertyManager = ComponentLocator.getComponent(ContentPropertyManager)
+UserAccessor userAccessor = ComponentLocator.getComponent(UserAccessor)
+
+long pageId = context.entity.id
+def page = pageManager.getPage(pageId)
+def writer = new StringWriter()
+def builder = new MarkupBuilder(writer)
+
+String users = contentPropertyManager.getStringProperty(page, "user-acknowledged");
+log.info("Users: " + users)
+
+if(users == null || users == ""){
+    builder.div { p("The property 'user-achnowledged' is empty") }
+}else{
+
+    def splitUsers = users.split(';')
+
+    Calendar calendar = Calendar.getInstance();
+    builder.table {
+        tbody {
+            tr {
+                th { p("Userkey") }
+                th { p("User") }
+                th { p("Time") }
+            }
+            splitUsers.each { content ->
+                def userInformation = content.split('-')
+                tr {
+                    td { p(content) }
+                    td {
+                        ConfluenceUser user = userAccessor.getUserByKey(new UserKey(userInformation[0]))
+                        p(user.getName()) 
+                    }
+                    td { 
+                        def timeiInMS = userInformation[1] as long
+                        calendar.setTimeInMillis(timeiInMS);
+                        p( calendar.getTime() ) 
+                    }
+                }
+            }
+        }
+    }
+}
+
+xhtmlContent.convertStorageToView(writer.toString(), context)

@@ -1,0 +1,77 @@
+import com.atlassian.confluence.user.AuthenticatedUserThreadLocal
+import com.atlassian.sal.api.component.ComponentLocator;
+import org.apache.log4j.Level
+import org.apache.log4j.Logger
+import com.atlassian.confluence.pages.PageManager;
+import com.atlassian.confluence.core.ContentPropertyManager
+import com.atlassian.confluence.user.UserAccessor
+import com.atlassian.sal.api.user.UserKey
+import com.atlassian.confluence.user.ConfluenceUser
+
+def log = Logger.getLogger("com.onresolve.scriptrunner.runner.ScriptRunnerImpl")
+def currentUser = AuthenticatedUserThreadLocal.get()
+def currentUserKey = currentUser.key as String
+
+PageManager pageManager = ComponentLocator.getComponent(PageManager)
+ContentPropertyManager contentPropertyManager = ComponentLocator.getComponent(ContentPropertyManager)
+UserAccessor userAccessor = ComponentLocator.getComponent(UserAccessor)
+
+// CHANGE THIS ID
+long pageId = 94521878
+// CHANGE THE DATES
+Date dateFrom = Date.parse("yyyy-MM-dd hh:mm:ss", "2020-10-13 05:00:00")
+Date dateTo = Date.parse("yyyy-MM-dd hh:mm:ss", "2020-10-14 03:00:00")
+// CHANGE GROUP // GROUP NAME CAN BE EMPTY, THEN THE MESSAGE SHOWS TO ALL USERS
+// EXAMPLE: "bisonch-rgh-CONFL_KEY_FLG3_ADMIN"
+def groupname = ""
+
+
+//---------------------------------------------------------------------------
+// DATE CHECKS
+Date now = new Date()
+
+def dateBetween(Date dateFrom, Date dateTo, Date toCheck){
+    return toCheck.after(dateFrom) && toCheck.before(dateTo)
+}
+
+log.info(dateBetween(dateFrom, dateTo, now)) // returns false
+log.info(dateBetween(dateFrom, dateTo, now)) // returns true
+//---------------------------------------------------------------------------
+
+def page = pageManager.getPage(pageId)
+
+//---------------------------------------------------------------------------
+//PROPERTY CHECK
+String users = contentPropertyManager.getStringProperty(page, "user-acknowledged");
+def userkeys = []
+if(users != null){
+    log.info("users: " + users)
+    def splitUsers = users.split(';')
+    splitUsers.each{ user -> 
+      userkeys.add(user.split('-')[0])
+    }
+}
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+// GROUP CHECK
+
+ConfluenceUser user = userAccessor.getExistingUserByKey(new UserKey(currentUserKey))
+def grouplist = userAccessor.getGroupNamesForUserName(user.getName())
+
+//---------------------------------------------------------------------------
+
+
+if(dateBetween(dateFrom, dateTo, now)){
+    if(grouplist.contains(groupname) || groupname.isEmpty()){
+        if(userkeys.contains(currentUserKey)){
+            return false
+        }else{
+            return true
+        }
+    }
+}else{
+    return false
+}
+
+
