@@ -42,7 +42,7 @@ def page = pageManager.getPage(pageId)
 
 //---------------------------------------------------------------------------
 //PROPERTY CHECK
-String users = contentPropertyManager.getStringProperty(page, "user-acknowledged");
+String users = contentPropertyManager.getTextProperty(page, "user-acknowledged");
 def userkeys = []
 if(users != null){
     log.info("users: " + users)
