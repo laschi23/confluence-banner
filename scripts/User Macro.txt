@@ -29,7 +29,7 @@ def page = pageManager.getPage(pageId)
 def writer = new StringWriter()
 def builder = new MarkupBuilder(writer)
 
-String users = contentPropertyManager.getStringProperty(page, "user-acknowledged");
+String users = contentPropertyManager.getTextProperty(page, "user-acknowledged");
 log.info("Users: " + users)
 
 if(users == null || users == ""){
