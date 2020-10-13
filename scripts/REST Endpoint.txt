@@ -32,17 +32,17 @@ acknowledgeUser(
     
     def time = new Date().time
     
-    String users = contentPropertyManager.getStringProperty(page, "user-acknowledged");
+    String users = contentPropertyManager.getTextProperty(page, "user-acknowledged");
     log.info("users variable before: " + users)
     if(users == "" || users == null){
         log.info("the variable users was empty")
-   		contentPropertyManager.setStringProperty(page, "user-acknowledged", userkey+"-"+time+";")
+   		contentPropertyManager.setTextProperty(page, "user-acknowledged", userkey+"-"+time+";")
     }else{
         if(!users.contains(userkey)){
-   			contentPropertyManager.setStringProperty(page, "user-acknowledged", users + userkey+"-"+time+";")
+   			contentPropertyManager.setTextProperty(page, "user-acknowledged", users + userkey+"-"+time+";")
         }
     }
-    users = contentPropertyManager.getStringProperty(page, "user-acknowledged");
+    users = contentPropertyManager.getTextProperty(page, "user-acknowledged");
     log.info("users variable after: " + users)
     
     return Response.ok().build();
