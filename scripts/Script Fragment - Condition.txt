@@ -17,13 +17,14 @@ ContentPropertyManager contentPropertyManager = ComponentLocator.getComponent(Co
 UserAccessor userAccessor = ComponentLocator.getComponent(UserAccessor)
 
 // CHANGE THIS ID
-long pageId = 94521878
+long pageId = 87990021
 // CHANGE THE DATES
-Date dateFrom = Date.parse("yyyy-MM-dd hh:mm:ss", "2020-10-13 05:00:00")
-Date dateTo = Date.parse("yyyy-MM-dd hh:mm:ss", "2020-10-14 03:00:00")
+Date dateFrom = Date.parse("yyyy-MM-dd hh:mm:ss", "2020-10-08 09:25:00")
+Date dateTo = Date.parse("yyyy-MM-dd hh:mm:ss", "2021-10-08 10:39:00")
 // CHANGE GROUP // GROUP NAME CAN BE EMPTY, THEN THE MESSAGE SHOWS TO ALL USERS
-// EXAMPLE: "bisonch-rgh-CONFL_KEY_FLG3_ADMIN"
-def groupname = ""
+def groupname1 = ""
+def groupname2 = ""
+def groupname3 = ""
 
 
 //---------------------------------------------------------------------------
@@ -34,15 +35,13 @@ def dateBetween(Date dateFrom, Date dateTo, Date toCheck){
     return toCheck.after(dateFrom) && toCheck.before(dateTo)
 }
 
-log.info(dateBetween(dateFrom, dateTo, now)) // returns false
-log.info(dateBetween(dateFrom, dateTo, now)) // returns true
 //---------------------------------------------------------------------------
 
 def page = pageManager.getPage(pageId)
 
 //---------------------------------------------------------------------------
 //PROPERTY CHECK
-String users = contentPropertyManager.getTextProperty(page, "user-acknowledged");
+String users = contentPropertyManager.getStringProperty(page, "user-acknowledged");
 def userkeys = []
 if(users != null){
     log.info("users: " + users)
@@ -63,7 +62,7 @@ def grouplist = userAccessor.getGroupNamesForUserName(user.getName())
 
 
 if(dateBetween(dateFrom, dateTo, now)){
-    if(grouplist.contains(groupname) || groupname.isEmpty()){
+    if(grouplist.contains(groupname1) || grouplist.contains(groupname2) || grouplist.contains(groupname3) || groupname1.isEmpty()){
         if(userkeys.contains(currentUserKey)){
             return false
         }else{
