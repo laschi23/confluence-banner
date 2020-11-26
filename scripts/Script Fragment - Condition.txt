@@ -9,8 +9,15 @@ import com.atlassian.sal.api.user.UserKey
 import com.atlassian.confluence.user.ConfluenceUser
 
 def log = Logger.getLogger("com.onresolve.scriptrunner.runner.ScriptRunnerImpl")
+log.setLevel(Level.DEBUG)
 def currentUser = AuthenticatedUserThreadLocal.get()
+if (currentUser == null){
+	log.debug("Current User is null")
+    return false
+}
 def currentUserKey = currentUser.key as String
+
+log.debug("User Key: " + currentUserKey)
 
 PageManager pageManager = ComponentLocator.getComponent(PageManager)
 ContentPropertyManager contentPropertyManager = ComponentLocator.getComponent(ContentPropertyManager)
